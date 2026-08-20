@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "rutile": {
+      "command": "rutile",
+      "args": ["mcp"],
+      "env": {
+        "RUTILE_AGENT": "${RUTILE_AGENT}",
+        "RUTILE_TOKEN": "${RUTILE_TOKEN}"
+      }
+    }
+  }
+}

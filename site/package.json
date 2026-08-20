@@ -1,0 +1,20 @@
+{
+  "name": "rutile-site",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "validate": "html-validate dist/index.html"
+  },
+  "dependencies": {
+    "astro": "^7.2.4"
+  },
+  "devDependencies": {
+    "html-validate": "10.9.0"
+  }
+}

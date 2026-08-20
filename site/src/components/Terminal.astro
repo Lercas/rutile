@@ -1,0 +1,122 @@
+---
+// Live terminal demo: the exact CLI, replayed with a typing animation.
+---
+<div class="term-wrap">
+  <div class="term">
+    <div class="term-bar">
+      <div class="term-dots">
+        <span></span><span></span><span></span>
+        <span class="term-title mono">~/work/api — rutile session</span>
+      </div>
+      <span class="term-state mono">vault: sealed · audit: on</span>
+    </div>
+    <section class="term-body mono" id="term-body" aria-label="Demo of rutile CLI: registering an agent, granting policy, a granted read, a denied read and a human approval"></section>
+  </div>
+</div>
+
+<style>
+  .term-wrap { padding: 0 40px 72px; }
+  .term { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .term-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px; border-bottom: 1px solid var(--line);
+  }
+  .term-dots { display: flex; align-items: center; gap: 8px; }
+  .term-dots > span:not(.term-title) { width: 11px; height: 11px; border-radius: 50%; background: var(--line); display: block; }
+  .term-title { font-size: 12px; color: var(--muted); margin-left: 10px; }
+  .term-state { font-size: 11px; color: var(--muted); opacity: .7; }
+  .term-body { padding: 26px 24px 30px; font-size: 14.5px; line-height: 2; min-height: 330px; }
+  .term-body :global(.row) { display: grid; grid-template-columns: 74px 1fr; gap: 18px; white-space: pre-wrap; }
+  .term-body :global(.ts) { color: var(--faint); font-size: 12px; padding-top: 2px; }
+  .term-body :global(.cursor) {
+    display: inline-block; width: 9px; height: 17px; background: var(--gold);
+    vertical-align: -3px; margin-left: 1px; animation: blink 1s step-end infinite;
+  }
+  @media (max-width: 720px) {
+    .term-wrap { padding: 0 20px 48px; }
+    .term-body { font-size: 12.5px; }
+    .term-body :global(.row) { grid-template-columns: 1fr; gap: 0; }
+    .term-body :global(.ts) { display: none; }
+  }
+</style>
+
+<script>
+  const C = { g: 'var(--ok)', r: 'var(--bad)', gold: 'var(--gold)', t: 'var(--ink)', m: 'var(--muted)' };
+  const cmd = (text) => ({ typed: true, segs: [{ t: '$ ', c: C.m }, { t: text, c: C.t }] });
+  // Every line below is the real v1.4 CLI/MCP surface — no invented commands.
+  const script = [
+    cmd('rutile agent add claude --type claude-code'),
+    { pause: 700, segs: [{ t: '✓ ', c: C.g }, { t: 'token rtl_9f2a', c: C.t }, { t: '••••••••', c: C.gold }, { t: '  (shown once, stored as sha256)', c: C.m }] },
+    cmd(`rutile allow claude "dev/**" --for 1h`),
+    { pause: 700, segs: [{ t: '✓ ', c: C.g }, { t: 'claude → dev/** · until 18:42', c: C.t }] },
+    { pause: 900, segs: [{ t: '[claude] ', c: C.m }, { t: 'get_secret dev/stripe/sk_test', c: C.t }, { t: ' → granted ✓', c: C.g }, { t: ' · audit #4c21', c: C.m }] },
+    { pause: 900, segs: [{ t: '[claude] ', c: C.m }, { t: 'get_secret prod/db/url', c: C.t }, { t: ' → DENIED ✗', c: C.r }, { t: ' · no matching rule', c: C.m }] },
+    { pause: 1100, segs: [{ t: '[claude] ', c: C.m }, { t: 'request_access filed (id a1f4) · waiting for the human…', c: C.m }] },
+    cmd('rutile approve a1f4 --one-time'),
+    { pause: 800, segs: [{ t: '✓ ', c: C.g }, { t: 'approved · one-time grant, burns after first read', c: C.t }] },
+  ];
+
+  const body = document.getElementById('term-body');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pad = (n) => String(n).padStart(2, '0');
+  const ts = (i) => {
+    const base = 17 * 3600 + 39 * 60 + 41 + i * 3;
+    return `${pad(Math.floor(base / 3600) % 24)}:${pad(Math.floor(base / 60) % 60)}:${pad(base % 60)}`;
+  };
+  const rowEl = (segs, i, cursor) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const t = document.createElement('span');
+    t.className = 'ts';
+    t.textContent = ts(i);
+    const line = document.createElement('span');
+    for (const s of segs) {
+      const sp = document.createElement('span');
+      sp.style.color = s.c;
+      sp.textContent = s.t;
+      line.appendChild(sp);
+    }
+    if (cursor) {
+      const cur = document.createElement('span');
+      cur.className = 'cursor';
+      line.appendChild(cur);
+    }
+    row.append(t, line);
+    return row;
+  };
+  const renderAll = () => {
+    body.replaceChildren(...script.map((l, i) => rowEl(l.segs, i, false)));
+  };
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  if (reduced) {
+    renderAll();
+  } else {
+    (async function loop() {
+      for (;;) {
+        body.replaceChildren();
+        await wait(700);
+        for (let i = 0; i < script.length; i++) {
+          const line = script[i];
+          if (line.typed) {
+            const [prefix, main] = line.segs;
+            for (let k = 1; k <= main.t.length; k++) {
+              const partial = [prefix, { t: main.t.slice(0, k), c: main.c }];
+              const el = rowEl(partial, i, true);
+              if (body.children.length > i) body.replaceChild(el, body.children[i]);
+              else body.appendChild(el);
+              await wait(28);
+            }
+            body.replaceChild(rowEl(line.segs, i, false), body.children[i]);
+            await wait(350);
+          } else {
+            await wait(250);
+            body.appendChild(rowEl(line.segs, i, i === script.length - 1));
+            await wait(line.pause ?? 500);
+          }
+        }
+        await wait(4500);
+      }
+    })();
+  }
+</script>

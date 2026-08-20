@@ -1,0 +1,28 @@
+[Unit]
+Description=rutile MCP HTTPS gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rutile
+Group=rutile
+Environment=RUTILE_DIR=/var/lib/rutile
+Environment=RUTILE_SOCKET=/run/rutile/daemon.sock
+Environment=RUTILE_SPIFFE_TRUST_DOMAIN=rutile.internal
+ExecStart=/usr/local/bin/rutile mcp --http 0.0.0.0:7997 --tls-cert /etc/rutile/tls.crt --tls-key /etc/rutile/tls.key --tls-client-ca /etc/rutile/client-ca.crt --spiffe-trust-domain ${RUTILE_SPIFFE_TRUST_DOMAIN}
+Restart=on-failure
+RestartSec=2s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+ReadOnlyPaths=/etc/rutile
+
+[Install]
+WantedBy=multi-user.target

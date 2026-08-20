@@ -1,0 +1,8 @@
+{
+  "name": "rutile",
+  "description": "Local secrets broker for AI agents: policy-scoped secret access, zero-expose command execution, sub-agent delegation and audit. Requires the rutile binary (go install ./cmd/rutile) and a registered agent token.",
+  "version": "1.4.0",
+  "author": {
+    "name": "rutile contributors"
+  }
+}

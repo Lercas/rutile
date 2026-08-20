@@ -1,0 +1,20 @@
+version: 2
+project_name: rutile
+builds:
+  - main: ./cmd/rutile
+    binary: rutile
+    env: [CGO_ENABLED=0]
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+    ldflags: ["-s -w -X main.version={{.Version}}"]
+archives:
+  - formats: [tar.gz]
+    files: [README.md, README.ru.md, AGENTS.md, SECURITY.md, CHANGELOG.md, LICENSE, contrib/*]
+checksum:
+  name_template: checksums.txt
+sboms:
+  - artifacts: archive
+source:
+  enabled: true
+changelog:
+  use: git
