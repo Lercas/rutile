@@ -1,0 +1,31 @@
+[Unit]
+Description=rutile system secrets broker (admin uid %i)
+After=local-fs.target
+
+[Service]
+Type=simple
+User=rutile
+Group=rutile
+Environment=RUTILE_DIR=/var/lib/rutile
+Environment=RUTILE_SOCKET=/run/rutile/daemon.sock
+ExecStart=/usr/local/bin/rutile daemon --socket-mode 0660 --admin-uid %i
+Restart=on-failure
+RestartSec=2s
+RuntimeDirectory=rutile
+RuntimeDirectoryMode=0750
+StateDirectory=rutile
+StateDirectoryMode=0700
+UMask=0007
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+ReadWritePaths=/var/lib/rutile /run/rutile
+
+[Install]
+WantedBy=multi-user.target

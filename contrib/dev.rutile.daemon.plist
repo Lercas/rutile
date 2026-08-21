@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- launchd user agent: cp to ~/Library/LaunchAgents/ and run
+     launchctl load ~/Library/LaunchAgents/dev.rutile.daemon.plist
+     Adjust the binary path if rutile is installed elsewhere. -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>dev.rutile.daemon</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/rutile</string>
+    <string>daemon</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/tmp/rutile-daemon.log</string>
+  <key>StandardErrorPath</key><string>/tmp/rutile-daemon.log</string>
+</dict>
+</plist>
